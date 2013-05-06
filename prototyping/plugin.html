@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Lucky Draw</title>
+	<link href="css/bootstrap.css" rel="stylesheet" type="text/css" media="screen"/>
+	<style type="text/css">
+		
+		.screen-piece-class-test {
+			color: #555555;
+    		padding: 9px;
+    		vertical-algin: middle;
+		}
+		<!-- /*
+		.slot-screen>.slot-screen-piece:first-child{
+			margin-top: -40px;
+		}
+		*/-->
+		.lucky {
+			background-color: red;
+		}
+	</style>
+</head>
+<body>
+	<div style="height: 100px;"></div>
+	<ul id="slotMachine" class="thumbnails span11">
+		
+		<li class="span5 thumbnail slot">
+			
+		</li>
+	</ul>
+	
+	<div class="clearfix"></div>
+	<div class="input-append">
+		<input  id="slotCount" placeholder="1" type="text" class="span2 muted"/>
+		<button id="slotTrigger" class="btn btn-primary" type="button">Start</button>
+		<button id="reset" class="btn" type="button">reset</button>
+	</div>
+	<input  id="screenPieceCount" placeholder="5" type="text" class="span2"/>
+
+	<script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/jquery-slot.js"></script>
+	
+	<script type="text/javascript">
+		(function($){
+			$(function(){
+				var settings = {screenPieceCssClass: 'screen-piece-class-test'};
+				var $slots = $('.slot').slot(settings);
+				
+				var reGenerate = function(settings){
+					var slotCount = $('#slotCount');
+					var count = parseInt(slotCount.val()? slotCount.val(): slotCount.attr('placeholder'));
+					count = count>10? 10: count;
+					var colSpan, template = '';
+					switch(count){
+					case 4:
+					case 7:
+					case 8:
+						colSpan = 3;
+						break;
+					case 3:
+					case 6:
+						colSpan = 4;
+						break;
+					case 2:
+					case 1:
+						colSpan = 5;
+						break;
+					default:
+						colSpan = 2;
+					}
+					
+					for(var i=0; i<count; i++){
+						template += '<li class="span' + colSpan + ' thumbnail slot"/>';						
+					}
+					$slots = $('#slotMachine').removeClass(colSpan==2? 'span12': 'span11')
+											.addClass(colSpan==2? 'span11': 'span12')
+											.empty().html(template)
+											.children().slot(settings);
+				}
+				$('#slotTrigger').click(function(){
+					if(this.innerHTML == 'Start'){
+						this.innerHTML = 'Stop';
+						// setInterval(function,interval[,arg1,arg2,......argn])
+						$slots.slot('start');
+					} else{
+						this.innerHTML = 'Start';
+						$slots.slot('stop');
+					}
+				});
+				
+				$('#reset').click(function(){
+					$slots.slot('reset');
+				});
+				
+				$('#screenPieceCount').blur(function(){
+					var count = parseInt(this.value? this.value: $(this).attr('placeholder'));
+					$.extend(settings, {count:count<0? $(this).attr('placeholder'): count});
+					reGenerate(settings);
+				});
+				
+				$('#slotCount').blur(function(){
+					var anyScrolling = false;
+					$slots.each(function(){
+						return !(anyScrolling = $(this).slot('isScrolling'));
+					});
+					if(anyScrolling){
+						return false;
+					}
+					reGenerate(settings);
+				});
+			})
+		})(jQuery);
+		
+	</script>
+</body>
+</html>

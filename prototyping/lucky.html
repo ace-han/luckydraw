@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Lucky Draw - Lucky</title>
+<link href="css/standard.css" rel="stylesheet" type="text/css" />
+<script src="js/jquery.js"></script>
+<script src="js/jquery-slot.js"></script>
+<script>
+	$(function(){
+		var startLucky = true;
+		$("#button").bind("click",function(event){
+			
+			var anyScrolling = false;
+			$slots.each(function(){
+				return !(anyScrolling = $(this).slot('isScrolling'));
+			});
+			if(anyScrolling){
+				$(this).removeClass("buttonStop")
+				$(this).addClass("buttonStart")
+			    $slots.slot('stop');
+			} else {
+				$(this).removeClass("buttonStart").addClass("buttonStop")
+			    $slots.slot('start');
+			}
+		})
+		$(document).bind("keydown",function(event){
+			if(event.keyCode == 13 ||event.keyCode == 108||event.keyCode == 32){
+				$("#button").click();	
+			}	
+		})	
+		var settings = {screenPieceCssClass: 'slot-screen-piece'
+			, onStop: function($winnerPiece, $pieces){
+				$("#button").removeClass("buttonStop").addClass("buttonStart");
+				console.info($winnerPiece.text());
+			}
+			, onCommenceDown: function($winnerPiece, $pieces){
+				//
+			}
+			, screenHeight: 120
+		};
+		var $slots = $('.slot').slot(settings);
+		var count = 1;
+		$('#slotCount').val("1").blur(function(){
+			var anyScrolling = false;
+			$slots.each(function(){
+				return !(anyScrolling = $(this).slot('isScrolling'));
+			});
+			if($slots.slot('isScrolling')){
+				return false;
+			}
+			$('#slotMachine').removeClass("span"+count)
+			count = parseInt(this.value? this.value: $(this).attr('placeholder'));
+			count = count>10? 10: count;
+			var colSpan, template = '';
+			for(var i=0; i<count; i++){
+				if((count == 5 && i == 2)||(count == 7 && (i == 2 ||i == 0||i == 1))||(count == 9 && i == 0)||(count == 10 && (i == 0||i == 1))){
+					template += '<div class="thumbnail slot lucky_draw_window center"/>';	
+				}else{
+					template += '<div class="thumbnail slot lucky_draw_window"/>';
+				}
+										
+			}
+		
+			$slots = $('#slotMachine').addClass("span"+count)
+					 .empty().html(template)
+					 .children().slot(settings);
+		});
+	})
+	
+ </script>
+</head>
+
+<body>
+	<div id="content">
+    	<div class="lucky_draw span1"  id="slotMachine" align="center">
+        	<div class="lucky_draw_window slot slot-screen">
+            	 
+            </div>
+        </div>
+        <div align="center">
+          <div class="buttonStart" id="button"></div>
+          <div class="lotteryNumber">
+          	<input type="text" size="6" id="slotCount" value="1"/>
+          </div>
+        </div>
+    </div>
+</body>
+</html>

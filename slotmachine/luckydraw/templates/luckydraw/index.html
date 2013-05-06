@@ -1,0 +1,338 @@
+{% load debug %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Lucky Draw</title>
+	<link href="{% debug 'slotmachine/css/standard.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+	<link href="{% debug 'slotmachine/css/jquery-ui.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+</head>
+<body>
+<div class="background">
+    	<div class="content_center"  align="center">
+            <div id="content">
+                <div class="lucky_draw span1"  id="slotMachine" align="center">
+                    <div class="slot slot-screen" >
+                         
+                    </div>
+                </div>
+                <div>
+                	<div class="buttonStart" id="trigger"></div>
+                  	<div id="slotCount"></div>
+					<div class="selector_number">
+						<div class="clear"></div>
+					</div>
+					<div class="clear"></div>
+                <div class="lastWinners">
+                </div>
+                </div>
+                
+                <!-- 
+                Browser					MP3	Wav	Ogg
+				Internet Explorer 9+	YES	NO	NO
+				Chrome 6+				YES	YES	YES
+				Firefox 3.6+			NO	YES	YES
+				Safari 5+				YES	YES	NO
+				Opera 10+				NO	YES	YES
+                 -->
+                <audio id="audioTribe" loop="true">
+		           <source src="{{MEDIA_URL}}audio/tribe.ogg" type="audio/ogg"/>
+		            <source src="{{MEDIA_URL}}audio/tribe.wav" type="audio/wav"/>
+		            <source src="{{MEDIA_URL}}audio/tribe.mp3" type="audio/mpeg"/>
+		        </audio>
+		        <audio id="audioCommenceDown" loop="true">
+		            <source src="{{MEDIA_URL}}audio/commence-down.ogg" type="audio/ogg"/>
+		            <source src="{{MEDIA_URL}}audio/commence-down.wav" type="audio/wav"/>
+		            <source src="{{MEDIA_URL}}audio/commence-down.mp3" type="audio/mpeg"/>
+		        </audio>
+		        <audio id="audioCheer">
+		            <source src="{{MEDIA_URL}}audio/cheer.ogg" type="audio/ogg"/>
+		            <source src="{{MEDIA_URL}}audio/cheer.wav" type="audio/wav"/>
+		            <source src="{{MEDIA_URL}}audio/cheer.mp3" type="audio/mpeg"/>
+		        </audio>
+            </div>
+        </div>
+        
+    </div>
+
+<script type="text/javascript" src="{% debug 'slotmachine/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% debug 'slotmachine/js/utils.js' %}"></script>
+<script type="text/javascript" src="{% debug 'slotmachine/js/luckydraw/jquery-slot.js' %}"></script>
+<script type="text/javascript" src="{% debug 'slotmachine/js/jqueryui/jquery.ui.core.min.js' %}"></script>
+<script type="text/javascript" src="{% debug 'slotmachine/js/jqueryui/jquery.ui.widget.min.js' %}"></script>
+<script type="text/javascript" src="{% debug 'slotmachine/js/jqueryui/jquery.ui.mouse.min.js' %}"></script>
+<script type="text/javascript" src="{% debug 'slotmachine/js/jqueryui/jquery.ui.slider.min.js' %}"></script>
+<script type="text/javascript">
+<!--//
+(function($){
+	$(function(){
+		// our lucky draw is by session...
+		//$(window).on('beforeunload', function(){
+		//	return 'Leaving the page means start the lottery all over again';
+		//});
+		var candidateIterator = {
+				current: undefined
+				, next: function(){
+					return (this.current = this.current.next);
+				}
+		};
+		
+		var $lastWinners = $('.lastWinners');
+		var audioFadeOut = function(audio, intervalTime){
+			if($.data($(audio).get(0), 'fadeOutInterval')){
+				// has been doing fadeout return immediately
+				return;
+			}
+			$.data($(audio).get(0), 'fadeOutInterval', setInterval(function(){
+				var a = $(audio).get(0);
+				$.data(a, 'originVolume', a.volume || 1);
+				if(a.volume && a.volume>0 ){
+					a.volume = (a.volume-.1)>0? (a.volume-.1): 0; 
+				} else {
+					a.pause();
+					a.currentTime = 0;
+					var i = $.data(a, 'fadeOutInterval');
+					clearInterval(i);
+					i = null;
+					$.removeData(a, 'fadeOutInterval');
+					a.volume = $.data(a, 'originVolume');
+					$.removeData(a, 'originVolume');
+				}
+			}, intervalTime || 300));	
+		}
+		
+		var displayLastWinners = function(){
+			var lastWinners = $.data($lastWinners[0], 'lastWinners');
+    		if(lastWinners){
+    			var winnerTemplate = '';
+    			for(var i=0; i<lastWinners.length; i++){
+    				winnerTemplate += '<div class="winners slot-screen-piece"><div class="wrap">' 
+    									+ lastWinners[i].en_name + '<br/>' 
+    									+ lastWinners[i].zh_name + '<br/>' 
+    									+ lastWinners[i].department + '</div></div>'; 
+    			}
+    			$lastWinners.html(winnerTemplate);
+    		}
+		}
+		
+		var getWinnerUrl = '{% url luckydraw-get-winners 0 %}';
+		var prepareCandidates = function(candidates, iterator){
+			// link-wise
+			var currentWinners = $.data($lastWinners[0], 'lastWinners');
+	    	if (candidates.length) {
+	    		// padding for display
+				if (currentWinners && currentWinners.length>candidates.length){
+					// should be supported on firefox, chrome and IE10
+					candidates.push.apply(candidates, currentWinners);
+				}	    		
+	    	} else {
+		    	// if display is not enough
+		    	if(currentWinners){
+		    		// should be supported on firefox, chrome and IE10
+					candidates.push.apply(candidates, currentWinners);
+		    	} else{
+		    		// we are actually coming to the end
+		    		candidates.push({en_name: '', zh_name: 'The End', department: ''});
+		    	}
+	    	}
+			
+			
+	    	var length = candidates.length;
+	    	for(var i=0; i<length; i++){
+	    		candidates[i]['next'] = candidates[(i+1)%length];
+	    	}
+	    	iterator.current = candidates[0];
+	    	// after = candidates[0] the previous data queue should be gc
+		};
+		// init
+		$.post('{% url luckydraw-init %}',
+				{csrfmiddlewaretoken: getCookie('csrftoken')}, 
+				"json")
+	    .success(function(data, textStatus, jqXHR){
+	    	if(data.error){
+	    		alert(data.error);
+	    		return;
+	    	}
+	    	prepareCandidates(data, candidateIterator);
+	    }).error(function(jqXHR, textStatus, errorThrown){
+	    	alert(errorThrown);
+	    });
+		
+		var settings = {screenPieceCssClass: 'slot-screen-piece'
+			//, screenPieceCount: 3
+			, minSpeed: 10
+			, screenHeight: 119
+			, nextDisplay: function($elem){
+				// don't care if it would conflict
+				// it's frequent access. need to do using the original attribute to do so
+				var c = candidateIterator.next();
+				$elem[0].innerHTML = '<div class="wrap">'+c.en_name +'<br/><span>'+c.zh_name+'</span><br/>'+c.department+'</div>';
+			}
+			, onStart: function($slot){
+				//$.data($slot[0], 'ajaxing', true);
+				// found no need this method...
+			}
+			, okayToStop: function($slot){
+				// return !$.data($slot[0], 'ajaxing');
+				// accessing this value every 100 ms is a great effort
+				// suggest to do this in a outer method
+			}
+			, onCommenceDown: function($winnerPiece, $pieces){
+				var luckyWinner = $.data($winnerPiece.closest('.slot')[0], 'luckyWinner');
+				if(!luckyWinner){
+					$winnerPiece.html('<div class="wrap"><br/>The End<br/></div>');
+					return;
+				}
+				var slot = $winnerPiece.closest('.slot')[0];
+				var winner = $.data(slot, 'luckyWinner');
+				$winnerPiece.html('<div class="wrap">'+winner.en_name +'<br/><span>'+winner.zh_name+'</span><br/>'+winner.department+'</div>');
+				$audioTribe.trigger('pause');
+				$audioCommenceDown.trigger('play');
+			}
+			, onStop: function($winnerPiece, $pieces){
+				$trigger.removeClass("buttonStop").removeClass('buttonStopPressed').addClass("buttonStart");
+				// please be noted that winner could be none
+				// final display above
+				$.removeData($winnerPiece.closest('.slot')[0], 'luckyWinner');
+				$audioCommenceDown.trigger('pause');
+				$audioCheer.trigger('play');
+			}
+		};
+		
+		var $slots = $('.slot').slot(settings);
+		
+		var $trigger = $("#trigger").bind("click",function(event){
+			var itself = $(this);
+			if (itself.hasClass('buttonStop') || itself.hasClass('buttonStopPressed')){
+				// if ajaxing is not done then skip it, plz re-click the button again					
+				if(!itself.data('ajaxing')){
+					itself.removeClass('buttonStop').addClass('buttonStopPressed');
+					$slots.slot('stop');
+				}
+			} else {
+				itself.removeClass("buttonStart").addClass("buttonStop").data('ajaxing', true);
+			    $slots.slot('start');
+			    // don't know why have to wait a little bit after cheer sounds 
+			    // to make audioTribe working as expected
+			    // disable first...
+			    audioFadeOut($audioCheer);
+			    displayLastWinners();
+			    $audioTribe.trigger('play');
+			    //$audioTribe.get(0).volume = 1;
+			    $.post(getWinnerUrl.replace('0', $slotCount.slider('value')), 
+			    		{csrfmiddlewaretoken: getCookie('csrftoken')}, 
+			    		"json")
+			    .success(function(data, textStatus, jqXHR){
+			    	if(data.error){
+			    		// clear the winner for display 'The End' if necessary
+			    		$.removeData($lastWinners[0], 'lastWinners');
+			    		// this means candidates are not enough for display
+			    		prepareCandidates(data.luckydraw_session_remaining_candidates, candidateIterator)
+			    		alert(data.error);
+			    		return;
+			    	}
+			    	if(!data.luckydraw_session_remaining_candidates){
+			    		alert('No session id. We would force a page refresh...');
+			    		location.reload(true);
+			    	}
+			    	// bind winner name to active slot
+			    	var currentWinners = data.luckydraw_session_current_winners
+			    	$.data($lastWinners[0], 'lastWinners', currentWinners);
+			    	$slots.each(function(i, slot){
+			    		$.data(slot, 'luckyWinner', currentWinners[i]);
+			    	});
+			    	prepareCandidates(data.luckydraw_session_remaining_candidates, candidateIterator);
+			    }).error(function(jqXHR, textStatus, errorThrown){
+			    	alert(errorThrown);
+			    }).complete(function(jqXHR, textStatus){
+			    	$.removeData(itself[0], 'ajaxing');
+			    });
+			}
+		});
+		var count = 1, slotMin=1, slotMax=10, sliderNumTemplate='';
+		var $slotCount = $('#slotCount').slider({
+			animate: "fast",
+			min: slotMin,
+			max: slotMax,
+			range: "min",
+			start: function(event, ui){
+				// disable slotCount changes while scrolling
+				if($trigger.hasClass('buttonStop') || $trigger.hasClass('buttonStopPressed')){
+					return false;
+				}
+			},
+			change: function(event, ui){
+				
+        		displayLastWinners();
+				$('#slotMachine').removeClass("span"+count)
+				count = parseInt(ui.value);
+				count = count<10? count: 10;
+				// althrough $slot.slot('enable', false) makes more sense here
+				// no doubt that, re-generating this kind of slots saves a lot coding effort
+				var template = '';
+				for(var i=0; i<count; i++){
+					if((count == 5 && (i == 0||i == 1))
+							||(count == 7 && i <= 2)
+							||(count == 9 && i == 0)
+							||(count == 10 && i <= 1)){
+						template += '<div class="slot center"/>';	
+					}else{
+						template += '<div class="slot"/>';
+					}
+											
+				}
+			
+				$slots = $('#slotMachine').addClass("span"+count)
+						 .empty().html(template)
+						 .children().slot(settings);
+				
+		}});
+		for(var i=slotMin; i<=slotMax; i++){
+			sliderNumTemplate += '<div class="selector_number_item">' + i + '</div>';
+		}
+		$('.selector_number').prepend(sliderNumTemplate)
+							.find('.selector_number_item')
+							.on('click', function(){
+								$slotCount.slider('value',  this.innerHTML);
+							});
+		var $audioTribe = $('#audioTribe');
+		var $audioCommenceDown = $('#audioCommenceDown');
+		var $audioCheer = $('#audioCheer');
+		
+		$(document).on('keydown', function(event){
+			switch(event.which){
+			case 13:			// ENTER
+			case 32:			// SPACE
+			case 108:			// NUMPAD_ENTER
+				$trigger.click();
+				break;
+			case 37:			// left arrow
+			case 40:			// down arrow
+				// disable slotCount changes while scrolling
+				if($trigger.hasClass('buttonStart')){
+					var v = $slotCount.slider('value') - 1;
+					var min = $slotCount.slider('option', 'min');
+					$slotCount.slider('value', v<min? min: v);
+				}
+				break;
+			case 38:			// up arrow
+			case 39:			// right arrow
+				// disable slotCount changes while scrolling
+				if($trigger.hasClass('buttonStart')){
+					var v = $slotCount.slider('value') + 1;
+					var max = $slotCount.slider('option', 'max');
+					$slotCount.slider('value', v>max? max: v);	
+				}
+				break;
+			default:
+				// nothing
+				break;
+			}
+		});
+		
+	});
+})(jQuery);
+//-->
+</script>
+</body>
+</html>

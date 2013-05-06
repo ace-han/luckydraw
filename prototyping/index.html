@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Lucky Draw</title>
+	<link href="css/bootstrap.css" rel="stylesheet" type="text/css" media="screen"/>
+	<style type="text/css">
+		.slot-screen {
+			height: 200px;
+			overflow: hidden;
+		}
+		
+		.slot-screen>.slot-screen-piece {
+			line-height: 40px;
+			position: relative;
+		}
+		
+		.slot-screen>.slot-screen-piece:first-child{
+			margin-top: -40px;
+		}
+		
+		.lucky {
+			background-color: red;
+		}
+	</style>
+</head>
+<body>
+	<div style="height: 100px;"></div>
+	<ul id="slotMachine" class="thumbnails span11">
+		
+		<li class="span2 thumbnail slot">
+			<div class="slot-screen ">
+				<div class="caption slot-screen-piece">English Name0</div>
+				<div class="caption slot-screen-piece">English Name1</div>
+				<div class="caption slot-screen-piece">English Name2</div>
+				<div class="caption slot-screen-piece">English Name3</div>
+				<div class="caption slot-screen-piece">English Name4</div>
+			</div>
+		</li>
+	</ul>
+	
+	<div class="clearfix"></div>
+	<div class="input-append">
+		<input  id="slotCount" placeholder="1" type="text" class="span2 muted"/>
+		<button id="slotTrigger" class="btn btn-primary" type="button">Start</button>
+		<button id="reset" class="btn" type="button">reset</button>
+		
+	</div>
+
+	<script type="text/javascript" src="js/jquery.js"></script>
+	
+	<script type="text/javascript">
+		// should be class member	
+		var scrollInterval;
+		$(function(){
+			var DEFAULT_MAX_SPEED = 40;
+			var DEFAULT_MIN_SPEED = 4;
+			var LUCKY_CLASS_MARK = 'lucky';
+			var step = 2; 
+			var speed = 0;
+			var $slotCount = $('#slotCount');
+			var $pieces = $('.slot-screen-piece');
+			var $slot = $('.slot');
+			var $winnerPiece;
+			var nextDisplay = function($elem){};
+			var displayLuckyWinner = function($winnerPiece){};
+			
+			// reset location using this one
+			// should be a class member
+			var docOffsetTops = [];
+			$pieces.each(function(i, elem){
+				var self = $(elem);
+				docOffsetTops.push(self.offset().top);
+			});
+			// here limition the scroll should at least get 2 $pieces
+			var pieceHeight  = docOffsetTops[docOffsetTops.length-1] - docOffsetTops[docOffsetTops.length-2]
+			var outBoundaryY = docOffsetTops[docOffsetTops.length-1] + pieceHeight;
+			var inBoundaryY = docOffsetTops[0];
+			var winnerBoundaryY = docOffsetTops[Math.floor(docOffsetTops.length/2)];
+			
+			
+			var $slotMachine = $('#slotMachine');
+			var slotTemplate = $slotMachine.find('.slot')[0].outerHTML;
+			// TODO need to find some base line to do the judgement
+			
+			
+			$('#reset').live('click', function(){
+				$pieces.each(function(i, elem){
+					$(elem).offset({top: docOffsetTops[i]});
+				});
+			});
+
+			// scroll!
+			$('#slotTrigger').live('click', function(){
+				if(this.innerHTML == 'Start'){
+					this.innerHTML = 'Stop';
+					// setInterval(function,interval[,arg1,arg2,......argn])
+					scrollInterval = setInterval(start, 100, []);
+				} else{
+					this.innerHTML = 'Start';
+					clearInterval(scrollInterval);
+					scrollInterval = setInterval(stop, 100, []);
+				}
+			});
+
+			
+			var start = function(){
+				$winnerPiece = null;
+				speed = (speed>DEFAULT_MAX_SPEED)? DEFAULT_MAX_SPEED: (speed+step);
+				scroll(speed);
+			}
+			
+			var stop = function(){
+				speed = (speed<DEFAULT_MIN_SPEED)? DEFAULT_MIN_SPEED: (speed-step);
+				scroll(speed);
+				if(speed == DEFAULT_MIN_SPEED){
+					// the lucky winner should be already on the top of the slot screen
+					setLuckyWinner();
+					clearInterval(scrollInterval);
+					scrollInterval = setInterval(commenceDown, 100, []);
+				}
+			}
+			
+			var scroll = function(speed){
+				$pieces.each(function(i, elem){
+					var $e = $(elem);
+					var nextTop = $e.offset().top + speed;
+					if (nextTop >= outBoundaryY){
+						nextTop = inBoundaryY + nextTop - outBoundaryY;
+						// change the display here
+						nextDisplay($e);
+					}
+					$e.offset({top: nextTop});
+				});
+			}
+			
+			var setLuckyWinner = function(){
+				$pieces.each(function(i, elem){
+					$elem = $(elem);
+					if(Math.abs($elem.offset().top - inBoundaryY) <= pieceHeight){
+						$winnerPiece = $elem.addClass(LUCKY_CLASS_MARK);
+						return false;
+					}
+				});
+				
+			}
+			
+			var commenceDown = function(){
+				scroll(DEFAULT_MIN_SPEED);
+				if(Math.abs($winnerPiece.offset().top - winnerBoundaryY) <= DEFAULT_MIN_SPEED){
+					displayLuckyWinner($winnerPiece.removeClass(LUCKY_CLASS_MARK));
+					clearInterval(scrollInterval);
+					scrollInterval = null;
+				}
+			}
+		});
+		
+	</script>
+</body>
+</html>

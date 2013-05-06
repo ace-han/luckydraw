@@ -1,0 +1,317 @@
+@charset "utf-8";
+/* CSS Document */
+
+body{
+	margin:0 auto;
+	padding:0;
+	border:0;
+	font-family:Arial, Helvetica, sans-serif;
+	overflow:hidden;
+	 
+}
+
+.background{
+	background:url(../img/lucky_background.png) bottom left repeat-x;
+	height:100%;
+	width:100%;
+	position: absolute;
+	display: table;
+}
+
+ul, li{
+	margin:0;
+	padding:0;	
+}
+
+.content_center{
+	display: table-cell;
+ 
+ 
+}
+
+#content{
+	background:url(../img/background.png) no-repeat center;
+	width:1280px;
+	height:910px;
+	margin-top:-10px;
+	 
+
+}
+
+.lucky_draw{
+	position: relative;
+
+}
+
+.slot{
+	border: 1px #a9a9a9 solid;
+	border-radius:10px;
+	box-shadow:1px 1px 3px #9d8e94;
+	background:-moz-linear-gradient(top, #fefefe,#d0d0d0);
+	background: -webkit-gradient(linear,left top,left bottom,from(#fefefe), to(#d0d0d0));
+	width:210px;
+	height:119px;
+	overflow:hidden;
+	z-index:9999;
+	float:left;
+}
+
+.lastWinners{
+	border: 1px #a9a9a9 solid;
+	border-radius:10px;
+	box-shadow:1px 1px 3px #9d8e94;
+	background:-moz-linear-gradient(top, #fefefe,#d0d0d0);
+	background: -webkit-gradient(linear,left top,left bottom,from(#fefefe), to(#d0d0d0));
+	width:1280px;
+	height:120px;
+ 	position: relative;
+	z-index:9999;
+	top:590px;
+	text-align:left;
+}
+
+.slot-screen-piece{
+	width:210px;
+	height:119px;
+	display: table;
+	text-align:center;
+	font-size:18px;
+	font-weight:bolder;
+}
+
+.wrap{
+ 	display: table-cell;
+    vertical-align: middle;	
+}
+.font_family_sc{
+	font-family:"黑体";
+	font-size:22px;
+}
+
+.buttonStart{
+	background:url(../img/start_button.png) no-repeat;
+	width:300px;
+	height:111px;
+	position: relative;
+    top:610px;
+	left:207px;
+	cursor:pointer;
+}
+
+
+.buttonStop{
+	background:url(../img/stop_button.png) no-repeat;
+	width:300px;
+	height:111px;
+	position: relative;
+    top:610px;
+	left:207px;
+	cursor:pointer;
+}
+
+.buttonStopPressed{
+	background:url(../img/stop_button_press.png) no-repeat;
+	width:300px;
+	height:111px;
+	position: relative;
+    top:610px;
+	left:207px;
+	cursor:pointer;
+}
+
+
+.lotteryNumber{
+	position: relative;
+    top:680px;
+	left:830px;
+	
+}
+
+.lotteryNumber input{
+	width:60px;
+	height:30px;
+	text-align:right;	
+}
+
+.span1{
+	top:280px;
+	left:50px;
+	max-width:300px;
+}
+
+.span2{
+	top:280px;
+		left:180px;
+	max-width:900px;
+}
+
+.span2 .slot{
+	margin-right:150px;
+}
+
+.span3{
+	top:280px;
+	left:105px;
+	max-width:1000px;
+}
+
+.span3 .slot{
+	margin-right:80px;
+}
+
+.span4{
+	top:190px;
+	left:180px;
+	max-width:900px;
+}
+
+.span4 .slot{
+	margin-right:150px;
+	margin-bottom:100px;
+}
+
+.span5{
+	top:190px;
+	left:105px;
+	max-width:1000px;
+}
+
+
+.span5 .slot{
+	margin-right:80px;
+	margin-bottom:100px;
+}
+.span5 .center{
+	margin-left:100px;
+	margin-right:65px;
+}
+
+
+.span6{
+	top:190px;
+	left:105px;
+	max-width:1000px;
+}
+
+.span6 .slot{
+	margin-right:80px;
+	margin-bottom:100px;
+}
+
+
+
+.span7{
+	top:190px;
+	left:50px;
+	max-width:1000px;
+}
+
+.span7 .slot{
+	margin-right:20px;
+	margin-bottom:80px;
+}
+.span7 .center{
+	margin-left:45px;
+ 	margin-right:45px;
+	margin-bottom:100px;
+}
+
+.span8{
+	top:190px;
+	left:50px;
+	max-width:1000px;
+}
+
+.span8 .slot{
+	margin-right:20px;
+	margin-bottom:80px;
+}
+.span9{
+	top:160px;
+	left:50px;
+	max-width:1000px;
+}
+
+.span9 .slot{
+	margin-right:20px;
+	margin-bottom:20px;
+}
+.span9 .center{
+	margin-left:350px;
+ 	margin-right:300px;
+	margin-bottom:20px;
+}
+.span10{
+	top:160px;
+	left:50px;
+	max-width:1000px;
+}
+
+.span10 .slot{
+	margin-right:20px;
+	margin-bottom:20px;
+}
+.span10 .center{
+	margin-left:120px;
+ 	margin-right:130px;
+	margin-bottom:20px;
+}
+
+ 
+.selector_number{
+	position: relative;
+	top:565px;
+	left:-200px;
+	width:330px;
+	height:30px;	
+	color:#ffffff;
+	font-weight:bolder;
+	cursor:pointer;
+}
+.span4 + div .selector_number,.span5 + div .selector_number,.span6 + div .selector_number{
+	top:250px;
+}
+.span7 + div .selector_number{
+	top:270px;	
+}
+.span8 + div .selector_number{
+	top:290px;
+}
+.span9 + div .selector_number,.span10 + div .selector_number{
+	top:269px;
+}
+ 
+.selector_number .selector_number_item{
+	float:left;
+	width:33px;
+	top:0px;
+}
+.clear{
+	clear:both;
+}
+ 
+
+#slotCount {
+position:relative;
+	top:555px;
+	left:-200px;
+	width:300px;	
+}
+
+.span4 + div .lastWinners,.span5 + div .lastWinners,.span6 + div .lastWinners{
+	top:286px;
+}
+.span7 + div .lastWinners{
+	top:306px;	
+}
+.span8 + div .lastWinners{
+	top:326px;
+}
+.span9 + div .lastWinners,.span10 + div .lastWinners{
+	top:305px;
+}
+
+.winners{
+	float:left;
+	width:125px;
+}

@@ -1,4 +1,11 @@
 *.log
 *.pot
+*.pyc*.log
+*.pot
 *.pyc
-local_settings.py
+/.pydevproject
+/.project
+/.settings
+/manage.py
+/manage.debug.py
+/manage.origin.py
